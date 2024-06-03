@@ -5,10 +5,15 @@ const app = express();
 const port = process.env.PORT || 5000;
 
 //middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: ["http://localhost:5173"],
+    credentials: true,
+  })
+);
 app.use(express.json());
 
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.l4sutcp.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -36,6 +41,13 @@ async function run() {
     // All Post Method
     app.get("/allPost", async (req, res) => {
       const result = await forumCollection.find().toArray();
+      res.send(result);
+    });
+    // This user see own his post
+    app.get("/allPost/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const result = await forumCollection.find(query).toArray();
       res.send(result);
     });
 
