@@ -22,9 +22,23 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    // Connect the client to the server	(optional starting in v4.7)
-    // await client.connect();
-    // Send a ping to confirm a successful connection
+    //Collection
+    const forumCollection = client
+      .db("TalkTime")
+      .collection("talkTimeCollection");
+
+    // Add Post user can post
+    app.post("/addedPost", async (req, res) => {
+      const addPost = req.body;
+      const result = await forumCollection.insertOne(addPost);
+      res.send(result);
+    });
+    // All Post Method
+    app.get("/allPost", async (req, res) => {
+      const result = await forumCollection.find().toArray();
+      res.send(result);
+    });
+
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
