@@ -28,10 +28,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     //Collection
-    const forumCollection = client
-      .db("TalkTime")
-      .collection("talkTimeCollection");
-
+    const forumCollection = client.db("TalkTime").collection("posts");
     const userCollection = client.db("TalkTime").collection("users");
 
     // =================Making Role Admin & User===========================
@@ -51,6 +48,11 @@ async function run() {
         return res.send({ message: "user already exists", insertedId: null });
       }
       const result = await userCollection.insertOne(user);
+      res.send(result);
+    });
+    // Admin can see all user details
+    app.get("/users", async (req, res) => {
+      const result = await userCollection.find().toArray();
       res.send(result);
     });
 
