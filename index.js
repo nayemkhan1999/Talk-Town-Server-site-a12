@@ -32,17 +32,56 @@ async function run() {
       .db("TalkTime")
       .collection("talkTimeCollection");
 
+    const userCollection = client.db("TalkTime").collection("users");
+
+    // =================Making Role Admin & User===========================
+    app.get("/Role/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const result = await userCollection.findOne(query);
+      const role = result.role;
+      res.send({ role });
+    });
+    //==============When user login store on data save mongodb 2nd time user login then msg already exist user==============
+    app.post("/users", async (req, res) => {
+      const user = req.body;
+      const query = { email: user.email };
+      const existingUser = await userCollection.findOne(query);
+      if (existingUser) {
+        return res.send({ message: "user already exists", insertedId: null });
+      }
+      const result = await userCollection.insertOne(user);
+      res.send(result);
+    });
+
     // Add Post user can post
     app.post("/addedPost", async (req, res) => {
       const addPost = req.body;
       const result = await forumCollection.insertOne(addPost);
       res.send(result);
     });
+
     // All Post Method
     app.get("/allPost", async (req, res) => {
-      const result = await forumCollection.find().toArray();
-      res.send(result);
+      const page = parseInt(req.query.page);
+      const size = parseInt(req.query.size);
+
+      try {
+        const totalPosts = await forumCollection.countDocuments();
+        const result = await forumCollection
+          .find()
+          .skip(page * size)
+          .limit(size)
+          .toArray();
+
+        res.send({ posts: result, totalPosts });
+      } catch (error) {
+        res
+          .status(500)
+          .send({ error: "An error occurred while fetching posts." });
+      }
     });
+
     // This user see own his post
     app.get("/allPost/:email", async (req, res) => {
       const email = req.params.email;
