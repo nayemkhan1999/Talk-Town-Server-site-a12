@@ -112,11 +112,7 @@ async function run() {
 
       try {
         const totalPosts = await forumCollection.countDocuments();
-        const result = await forumCollection
-          .find()
-          .skip(page * size)
-          .limit(size)
-          .toArray();
+        const result = await forumCollection.find().toArray();
 
         res.send({ posts: result, totalPosts });
       } catch (error) {
