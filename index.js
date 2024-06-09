@@ -38,6 +38,7 @@ async function run() {
     const forumCollection = client.db("TalkTime").collection("posts");
     const userCollection = client.db("TalkTime").collection("users");
     const announceCollection = client.db("TalkTime").collection("announce");
+    const commentCollection = client.db("TalkTime").collection("comments");
 
     // jwt related api
     app.post("/jwt", async (req, res) => {
@@ -102,7 +103,7 @@ async function run() {
     app.get("/allData", async (req, res) => {
       const allUser = await userCollection.countDocuments();
       const allPost = await forumCollection.countDocuments();
-      res.send({ allUser, allPost });
+      res.send([allUser, allPost]);
     });
 
     //===================Update a user role============
@@ -117,12 +118,25 @@ async function run() {
       res.send(result);
     });
 
-    // app.patch("/badge/:email", async (req, res) => {
-    //   const email = req.params.email;
-    //   const query = { email: email };
-    //   const user = req.body;
-    //   const update = {};
-    // });
+    app.patch("/badge/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const user = req.body;
+
+      const update = {
+        $set: {
+          badge: user.newBadge,
+        },
+      };
+      const result = await userCollection.updateOne(query, update);
+      res.send(result);
+    });
+    app.get("/userProfile/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const result = await userCollection.find(query).toArray();
+      res.send(result);
+    });
 
     // Add Post user can post
     app.post("/addedPost", async (req, res) => {
@@ -131,6 +145,17 @@ async function run() {
       res.send(result);
     });
 
+    // comment post on dataBase
+    app.post("/userComment", async (req, res) => {
+      const addComment = req.body;
+      const result = await commentCollection.insertOne(addComment);
+      res.send(result);
+    });
+    // comment get on dataBase
+    app.get("/allComment", async (req, res) => {
+      const result = await commentCollection.find().toArray();
+      res.send(result);
+    });
     // All Post Method
     app.get("/allPost", async (req, res) => {
       const page = parseInt(req.query.page);
@@ -164,21 +189,6 @@ async function run() {
       res.send(result);
     });
 
-    // Payment intent
-    // app.post("/create-payment-intent", async (req, res) => {
-    //   const { price } = req.body;
-    //   const amount = parseInt(price * 100);
-
-    //   const paymentIntent = await stripe.paymentIntens.create({
-    //     amount: amount,
-    //     currency: "usd",
-    //     payment_method_types: ["card"],
-    //   });
-
-    //   res.send({
-    //     clientSecret: paymentIntent.client_secret,
-    //   });
-    // });
     // ===================================
     app.post("/create-payment-intent", async (req, res) => {
       const { price } = req.body;
