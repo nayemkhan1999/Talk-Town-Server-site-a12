@@ -37,6 +37,7 @@ async function run() {
     //Collection
     const forumCollection = client.db("TalkTime").collection("posts");
     const userCollection = client.db("TalkTime").collection("users");
+    const announceCollection = client.db("TalkTime").collection("announce");
 
     // jwt related api
     app.post("/jwt", async (req, res) => {
@@ -80,10 +81,28 @@ async function run() {
       const result = await userCollection.insertOne(user);
       res.send(result);
     });
+
+    // Admin AnnounceMent Post method
+    app.post("/announce", async (req, res) => {
+      const mic = req.body;
+      const result = await announceCollection.insertOne(mic);
+      res.send(result);
+    });
+    // Same just for get method
+    app.get("/announce", async (req, res) => {
+      const result = await announceCollection.find().toArray();
+      res.send(result);
+    });
     // Admin can see all user details
     app.get("/users", async (req, res) => {
       const result = await userCollection.find().toArray();
       res.send(result);
+    });
+
+    app.get("/allData", async (req, res) => {
+      const allUser = await userCollection.countDocuments();
+      const allPost = await forumCollection.countDocuments();
+      res.send({ allUser, allPost });
     });
 
     //===================Update a user role============
@@ -97,6 +116,13 @@ async function run() {
       const result = await userCollection.updateOne(query, updateDoc);
       res.send(result);
     });
+
+    // app.patch("/badge/:email", async (req, res) => {
+    //   const email = req.params.email;
+    //   const query = { email: email };
+    //   const user = req.body;
+    //   const update = {};
+    // });
 
     // Add Post user can post
     app.post("/addedPost", async (req, res) => {
@@ -139,20 +165,34 @@ async function run() {
     });
 
     // Payment intent
+    // app.post("/create-payment-intent", async (req, res) => {
+    //   const { price } = req.body;
+    //   const amount = parseInt(price * 100);
+
+    //   const paymentIntent = await stripe.paymentIntens.create({
+    //     amount: amount,
+    //     currency: "usd",
+    //     payment_method_types: ["card"],
+    //   });
+
+    //   res.send({
+    //     clientSecret: paymentIntent.client_secret,
+    //   });
+    // });
+    // ===================================
     app.post("/create-payment-intent", async (req, res) => {
       const { price } = req.body;
       const amount = parseInt(price * 100);
-
-      const paymentIntent = await stripe.paymentIntens.create({
+      const paymentIntent = await stripe.paymentIntents.create({
         amount: amount,
         currency: "usd",
         payment_method_types: ["card"],
       });
-
       res.send({
         clientSecret: paymentIntent.client_secret,
       });
     });
+
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
