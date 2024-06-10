@@ -48,21 +48,7 @@ async function run() {
       });
       res.send({ token });
     });
-    // MiddleWares VeriFy TOKEN
-    // const verifyToken = (req, res, next) => {
-    //   console.log("inside verify token", req.headers.authorization);
-    //   if (!req.headers.authorization) {
-    //     return res.status(401).send({ message: "forbidden access" });
-    //   }
-    //   const token = req.headers.authorization.split(" ")[1];
-    //   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
-    //     if (err) {
-    //       return res.status(401).send({ message: "forbidden access" });
-    //     }
-    //     req.decoded = decoded;
-    //     next();
-    //   });
-    // };
+
     // =================Making Role Admin & User===========================
     app.get("/Role/:email", async (req, res) => {
       const email = req.params.email;
