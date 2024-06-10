@@ -145,6 +145,13 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/userPost/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const result = await forumCollection.find(query).toArray();
+      res.send(result);
+    });
+
     // comment post on dataBase
     app.post("/userComment", async (req, res) => {
       const addComment = req.body;
